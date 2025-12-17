@@ -1,0 +1,8 @@
+kinect_capture.cpp
+kinect_capture.h
+kinect_wrapper.cpp
+setup.py
+kinect_wrapper.egg-info/PKG-INFO
+kinect_wrapper.egg-info/SOURCES.txt
+kinect_wrapper.egg-info/dependency_links.txt
+kinect_wrapper.egg-info/top_level.txt

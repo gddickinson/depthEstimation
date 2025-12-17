@@ -1,0 +1,13 @@
+/build
+*.png
+*.jpg
+*.pt
+*.dat
+*.ppm
+*.pgm
+/model
+*.pb
+/kinectStream/testing
+/kinectStream/testing_2
+/kinectStream/kinect_interface/build
+/kinectStream/build
