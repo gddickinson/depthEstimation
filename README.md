@@ -1,98 +1,114 @@
-# Kinect Xbox 360 Camera Interface
+# Depth Estimation & 3D Body Tracking
 
-## Introduction
+Real-time depth estimation and human body tracking using a combination of monocular depth models, Kinect Xbox 360 depth sensing, YOLO pose estimation, and facial landmark detection. Supports webcam-only mode and Kinect-enhanced mode with 3D skeleton visualization.
 
-This project provides a high-performance interface for the Kinect Xbox 360 camera, allowing easy access to both RGB and depth data streams in Python. The Kinect Xbox 360 is a motion sensing input device originally developed for Xbox 360 gaming consoles. It features an RGB camera, an infrared projector and camera for depth sensing, and a multi-array microphone.
+## Features
 
-## Project Overview
+- **Monocular Depth Estimation**: MobileNetV2-based encoder-decoder model that generates per-pixel depth maps from a single RGB camera
+- **YOLO-Powered Detection**: Instance segmentation (YOLOv8-seg), pose estimation (YOLOv8-pose), and object classification using Ultralytics models
+- **Facial Landmark Detection**: 68-point facial landmark tracking via dlib for detailed face geometry
+- **Kinect Integration**: Direct Kinect Xbox 360 depth sensor support via a custom C++/Cython interface (see [kinect_interface](../kinect_interface/))
+- **3D Skeleton Visualization**: Real-time 3D body skeleton rendering with PyQt5 and pyqtgraph OpenGL, including face mesh, hand tracking (MediaPipe), and body keypoints
+- **Kalman Filtering**: Smooth skeleton position estimation using filterpy Kalman filters
+- **SLAM-like Mapping**: Experimental SLAM mapping interface using Kinect depth data
+- **Person Tracking**: KCF-based object tracking for consistent person identification across frames
 
-This implementation uses libfreenect for low-level communication with the Kinect device, with a C++ backend for performance and a Cython wrapper for Python accessibility. The project aims to provide a simple, efficient way to capture and process Kinect data for various applications such as computer vision, robotics, and interactive installations.
+## Project Structure
 
-### Features
+| File | Description |
+|------|-------------|
+| `depthEstimation.py` | Main pipeline: YOLO segmentation + dlib face + MobileNetV2 depth + wireframe overlay |
+| `depthEstimation_working.py` | Standalone working version of webcam-based depth estimation |
+| `depthEstimation_kinect.py` | Full Kinect pipeline with 3D skeleton, face mesh, and hand tracking (PyQt5 GUI) |
+| `depthEstimation_kinect_working.py` | Simplified Kinect depth + YOLO segmentation |
+| `depthEstimation_kinect_pyqt5_working.py` | Kinect viewer with PyQt5 display |
+| `depthEstimation_kinect_skeletonTracking_working.py` | Kinect skeleton tracking |
+| `depthEstimation_kinect_skeletonAndFace_working.py` | Kinect skeleton + facial landmarks |
+| `depthEstimation_kinect_skeleton-face-hands_working.py` | Full body + face + hand tracking |
+| `skeletonPositionEstimation.py` | Kalman-filtered 3D skeleton position estimation |
+| `skeletonTest.py` | Skeleton tracking test/debug utilities |
+| `skeleton3D.py` | 3D skeleton rendering with pyqtgraph |
+| `skeletonAnimation.py` | Animated 3D skeleton visualization |
+| `slamMapping.py` | Experimental SLAM-like mapping with Kinect depth |
+| `animateFBXskeleton.py` | FBX skeleton animation loading |
+| `kinect_capture.cpp` / `.h` | C++ backend for Kinect frame capture (shared with kinect_interface) |
+| `kinect_wrapper.pyx` | Cython wrapper for the C++ Kinect capture |
+| `setup.py` | Build script for the Cython extension |
 
-- Real-time access to RGB and depth data streams
-- High-performance C++ backend
-- Python-friendly interface via Cython
-- Easy-to-use Python API for capturing frames
-- Example script for visualizing RGB and depth data
+## Prerequisites
 
-## Technical Implementation
+- Python 3.8+
+- Kinect Xbox 360 camera (optional, for Kinect-enhanced modes)
+- libfreenect (for Kinect support)
 
-The project is structured as follows:
+### Python Dependencies
 
-1. C++ Backend (`kinect_capture.cpp`, `kinect_capture.h`):
-   - Handles direct communication with the Kinect using libfreenect
-   - Manages frame capture and data buffering
-   - Provides a clean C interface for the Cython wrapper
+```
+tensorflow
+ultralytics
+opencv-python
+numpy
+dlib
+mediapipe
+PyQt5
+pyqtgraph
+pyopengl
+scipy
+filterpy
+```
 
-2. Cython Wrapper (`kinect_wrapper.pyx`):
-   - Bridges the C++ backend with Python
-   - Handles memory management and type conversions
+### Pre-trained Models (included or auto-downloaded)
 
-3. Python Interface:
-   - Provides a simple, object-oriented API for Python users
-   - Allows easy access to RGB and depth frames as NumPy arrays
+- `yolov8n-seg.pt` -- instance segmentation
+- `yolov8n-pose.pt` -- pose estimation
+- `yolov8n.pt`, `yolov8n-cls.pt`, `yolov8n-obb.pt`, `yolov8x.pt`, `yolov8x-cls.pt` -- additional YOLO variants
+- `shape_predictor_68_face_landmarks.dat` -- dlib facial landmark model
+- `midas_model.pb` -- MiDaS depth estimation model
 
-4. Build System (`setup.py`):
-   - Manages compilation of C++ and Cython code
-   - Handles linking with libfreenect and other dependencies
+## Installation
 
-## Setup and Installation
-
-### Prerequisites
-
-- Kinect Xbox 360 camera
-- libfreenect
-- Python 3.6+
-- NumPy
-- OpenCV (for visualization)
-
-### Installation Steps
-
-1. Install libfreenect:
+1. Install system dependencies (macOS):
+   ```bash
+   brew install libfreenect cmake dlib
    ```
-   brew install libfreenect
+
+2. Install Python dependencies:
+   ```bash
+   pip install tensorflow ultralytics opencv-python numpy dlib mediapipe PyQt5 pyqtgraph pyopengl scipy filterpy
    ```
 
-2. Clone this repository:
-   ```
-   git clone https://github.com/yourusername/kinect-xbox360-interface.git
-   cd kinect-xbox360-interface
-   ```
-
-3. Install Python dependencies:
-   ```
-   pip install numpy opencv-python Cython
-   ```
-
-4. Compile the Cython extension:
-   ```
+3. Build the Kinect Cython extension (if using Kinect):
+   ```bash
    python setup.py build_ext --inplace
    ```
 
 ## Usage
 
-Here's a simple example of how to use the Kinect interface:
-
-```python
-from kinect_wrapper import PyKinectCapture
-import cv2
-
-kinect = PyKinectCapture()
-kinect.init()
-
-while True:
-    rgb, depth = kinect.get_frames()
-    if rgb is not None and depth is not None:
-        cv2.imshow("RGB", cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
-        cv2.imshow("Depth", cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U))
-    
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-cv2.destroyAllWindows()
+### Webcam-Only Depth Estimation
+```bash
+python depthEstimation.py
 ```
+Runs the full pipeline with webcam: YOLO segmentation, face detection, monocular depth estimation, and wireframe overlay. Press `q` to quit.
 
-For a more detailed example, see `test_kinect.py` in the repository.
+### Kinect 3D Skeleton Tracking
+```bash
+python depthEstimation_kinect.py
+```
+Launches a PyQt5 GUI with real-time Kinect RGB/depth display and 3D skeleton visualization using pyqtgraph OpenGL. Includes face mesh, hand tracking, and body skeleton.
 
+### Skeleton Position Estimation
+```bash
+python skeletonPositionEstimation.py
+```
+Kalman-filtered skeleton position estimation using Kinect depth data for smooth tracking.
 
+## How It Works
+
+1. **Frame Capture**: RGB frames from webcam or Kinect (with depth)
+2. **Object Detection**: YOLOv8 identifies and segments people in the frame
+3. **Pose Estimation**: YOLOv8-pose extracts 17 body keypoints
+4. **Face Analysis**: dlib detects faces and extracts 68 facial landmarks
+5. **Hand Tracking**: MediaPipe identifies hand landmarks (Kinect mode)
+6. **Depth Estimation**: Either MobileNetV2 monocular depth or Kinect IR depth sensor
+7. **3D Reconstruction**: Combines 2D keypoints with depth data to create 3D skeleton
+8. **Visualization**: Side-by-side RGB + depth colormap display, or 3D OpenGL rendering

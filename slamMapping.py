@@ -1,3 +1,9 @@
+"""
+WARNING: This module is experimental / work-in-progress.
+SLAM-like mapping using Kinect depth data is incomplete and
+may not produce reliable results. Use at your own risk.
+"""
+
 import numpy as np
 import cv2
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel, QTextEdit
