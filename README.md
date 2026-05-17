@@ -112,3 +112,7 @@ Kalman-filtered skeleton position estimation using Kinect depth data for smooth 
 6. **Depth Estimation**: Either MobileNetV2 monocular depth or Kinect IR depth sensor
 7. **3D Reconstruction**: Combines 2D keypoints with depth data to create 3D skeleton
 8. **Visualization**: Side-by-side RGB + depth colormap display, or 3D OpenGL rendering
+
+
+---
+*Built with AI assistance from [Claude (Anthropic)](https://claude.com/).*
