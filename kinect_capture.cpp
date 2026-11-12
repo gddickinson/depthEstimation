@@ -16,6 +16,7 @@ private:
     std::vector<uint8_t> rgb_buffer;
 
     pthread_t freenect_thread;
+    bool thread_started;   // only join/stop what init() actually started
     std::atomic<bool> die;
 
     pthread_mutex_t buffer_mutex;
@@ -44,7 +45,7 @@ private:
     }
 
 public:
-    KinectCapture() : f_ctx(nullptr), f_dev(nullptr), die(false) {
+    KinectCapture() : f_ctx(nullptr), f_dev(nullptr), thread_started(false), die(false) {
         pthread_mutex_init(&buffer_mutex, nullptr);
         pthread_cond_init(&frame_cond, nullptr);
         depth_buffer.resize(640 * 480 * 2);  // 16-bit depth
@@ -52,23 +53,35 @@ public:
     }
 
     ~KinectCapture() {
+        close();
+        pthread_mutex_destroy(&buffer_mutex);
+        pthread_cond_destroy(&frame_cond);
+    }
+
+    // Stop the streams and release the device. Safe to call more than once, and when init() failed or never ran
+    // (previously the destructor joined a thread that was never created, which aborted the process).
+    void close() {
         die = true;
-        pthread_join(freenect_thread, nullptr);
+        if (thread_started) {
+            pthread_join(freenect_thread, nullptr);
+            thread_started = false;
+        }
         if (f_dev) {
             freenect_stop_depth(f_dev);
             freenect_stop_video(f_dev);
             freenect_close_device(f_dev);
+            f_dev = nullptr;
         }
         if (f_ctx) {
             freenect_shutdown(f_ctx);
+            f_ctx = nullptr;
         }
-        pthread_mutex_destroy(&buffer_mutex);
-        pthread_cond_destroy(&frame_cond);
     }
 
     bool init() {
         if (freenect_init(&f_ctx, nullptr) < 0) {
             std::cerr << "freenect_init() failed" << std::endl;
+            f_ctx = nullptr;
             return false;
         }
 
@@ -77,6 +90,8 @@ public:
         if (freenect_open_device(f_ctx, &f_dev, 0) < 0) {
             std::cerr << "Could not open device" << std::endl;
             freenect_shutdown(f_ctx);
+            f_ctx = nullptr;
+            f_dev = nullptr;
             return false;
         }
 
@@ -89,11 +104,15 @@ public:
         freenect_start_depth(f_dev);
         freenect_start_video(f_dev);
 
-        pthread_create(&freenect_thread, nullptr, freenect_threadfunc, this);
-        return true;
+        die = false;
+        thread_started = pthread_create(&freenect_thread, nullptr, freenect_threadfunc, this) == 0;
+        return thread_started;
     }
 
     bool getFrames(uint8_t *rgb, uint16_t *depth) {
+        if (!thread_started) {
+            return false;  // not streaming: waiting for a frame would block forever
+        }
         pthread_mutex_lock(&buffer_mutex);
         pthread_cond_wait(&frame_cond, &buffer_mutex);
         memcpy(rgb, rgb_buffer.data(), rgb_buffer.size());
@@ -113,6 +132,10 @@ bool init_kinect_capture(KinectCapture* capture) {
 
 bool get_kinect_frames(KinectCapture* capture, uint8_t *rgb, uint16_t *depth) {
     return capture->getFrames(rgb, depth);
+}
+
+void close_kinect_capture(KinectCapture* capture) {
+    capture->close();
 }
 
 void destroy_kinect_capture(KinectCapture* capture) {

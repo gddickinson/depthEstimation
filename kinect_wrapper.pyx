@@ -11,6 +11,7 @@ cdef extern from "kinect_capture.h":
     KinectCapture* create_kinect_capture()
     bool init_kinect_capture(KinectCapture* capture)
     bool get_kinect_frames(KinectCapture* capture, uint8_t *rgb, uint16_t *depth)
+    void close_kinect_capture(KinectCapture* capture)
     void destroy_kinect_capture(KinectCapture* capture)
 
 cdef class PyKinectCapture:
@@ -25,6 +26,11 @@ cdef class PyKinectCapture:
 
     def init(self):
         return init_kinect_capture(self._capture)
+
+    def close(self):
+        """Stop streaming and release the Kinect (the GUIs call this from closeEvent). Safe to call twice."""
+        if self._capture is not NULL:
+            close_kinect_capture(self._capture)
 
     def get_frames(self):
         cdef np.ndarray[np.uint8_t, ndim=3] rgb = np.empty((480, 640, 3), dtype=np.uint8)
