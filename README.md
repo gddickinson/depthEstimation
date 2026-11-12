@@ -4,7 +4,7 @@ Real-time depth estimation and human body tracking using a combination of monocu
 
 ## Features
 
-- **Monocular Depth Estimation**: MobileNetV2-based encoder-decoder model that generates per-pixel depth maps from a single RGB camera
+- **Monocular Depth Estimation (untrained)**: a MobileNetV2-based encoder-decoder that outputs a per-pixel map from a single RGB camera. Only the encoder has (ImageNet) weights; the decoder is built fresh and no trained weights are loaded, so its output is not yet a real depth estimate
 - **YOLO-Powered Detection**: Instance segmentation (YOLOv8-seg), pose estimation (YOLOv8-pose), and object classification using Ultralytics models
 - **Facial Landmark Detection**: 68-point facial landmark tracking via dlib for detailed face geometry
 - **Kinect Integration**: Direct Kinect Xbox 360 depth sensor support via a custom C++/Cython interface (see [kinect_interface](../kinect_interface/))
@@ -18,19 +18,19 @@ Real-time depth estimation and human body tracking using a combination of monocu
 | File | Description |
 |------|-------------|
 | `depthEstimation.py` | Main pipeline: YOLO segmentation + dlib face + MobileNetV2 depth + wireframe overlay |
-| `depthEstimation_working.py` | Standalone working version of webcam-based depth estimation |
+| `_archive/depthEstimation_working.py` | Standalone working version of webcam-based depth estimation (archived) |
 | `depthEstimation_kinect.py` | Full Kinect pipeline with 3D skeleton, face mesh, and hand tracking (PyQt5 GUI) |
-| `depthEstimation_kinect_working.py` | Simplified Kinect depth + YOLO segmentation |
-| `depthEstimation_kinect_pyqt5_working.py` | Kinect viewer with PyQt5 display |
-| `depthEstimation_kinect_skeletonTracking_working.py` | Kinect skeleton tracking |
-| `depthEstimation_kinect_skeletonAndFace_working.py` | Kinect skeleton + facial landmarks |
-| `depthEstimation_kinect_skeleton-face-hands_working.py` | Full body + face + hand tracking |
+| `_archive/depthEstimation_kinect_working.py` | Simplified Kinect depth + YOLO segmentation |
+| `_archive/depthEstimation_kinect_pyqt5_working.py` | Kinect viewer with PyQt5 display |
+| `_archive/depthEstimation_kinect_skeletonTracking_working.py` | Kinect skeleton tracking |
+| `_archive/depthEstimation_kinect_skeletonAndFace_working.py` | Kinect skeleton + facial landmarks |
+| `_archive/depthEstimation_kinect_skeleton-face-hands_working.py` | Full body + face + hand tracking |
 | `skeletonPositionEstimation.py` | Kalman-filtered 3D skeleton position estimation |
 | `skeletonTest.py` | Skeleton tracking test/debug utilities |
 | `skeleton3D.py` | 3D skeleton rendering with pyqtgraph |
 | `skeletonAnimation.py` | Animated 3D skeleton visualization |
 | `slamMapping.py` | Experimental SLAM-like mapping with Kinect depth |
-| `animateFBXskeleton.py` | FBX skeleton animation loading |
+| `experiments/animateFBXskeleton.py` | FBX skeleton animation loading |
 | `kinect_capture.cpp` / `.h` | C++ backend for Kinect frame capture (shared with kinect_interface) |
 | `kinect_wrapper.pyx` | Cython wrapper for the C++ Kinect capture |
 | `setup.py` | Build script for the Cython extension |
@@ -63,7 +63,7 @@ filterpy
 - `yolov8n-pose.pt` -- pose estimation
 - `yolov8n.pt`, `yolov8n-cls.pt`, `yolov8n-obb.pt`, `yolov8x.pt`, `yolov8x-cls.pt` -- additional YOLO variants
 - `shape_predictor_68_face_landmarks.dat` -- dlib facial landmark model
-- `midas_model.pb` -- MiDaS depth estimation model
+- `midas_model.pb` -- MiDaS depth estimation model (not loaded by any current script)
 
 ## Installation
 
@@ -109,7 +109,7 @@ Kalman-filtered skeleton position estimation using Kinect depth data for smooth 
 3. **Pose Estimation**: YOLOv8-pose extracts 17 body keypoints
 4. **Face Analysis**: dlib detects faces and extracts 68 facial landmarks
 5. **Hand Tracking**: MediaPipe identifies hand landmarks (Kinect mode)
-6. **Depth Estimation**: Either MobileNetV2 monocular depth or Kinect IR depth sensor
+6. **Depth Estimation**: Either the (untrained) MobileNetV2 monocular model or the Kinect IR depth sensor
 7. **3D Reconstruction**: Combines 2D keypoints with depth data to create 3D skeleton
 8. **Visualization**: Side-by-side RGB + depth colormap display, or 3D OpenGL rendering
 
