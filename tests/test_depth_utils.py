@@ -28,3 +28,14 @@ def test_tracker_gets_xywh_and_returns_xyxy():
     """KCF takes (x, y, w, h); it was given YOLO's (x1, y1, x2, y2)."""
     assert "xyxy_to_xywh(bbox)" in SRC and "xywh_to_xyxy(" in SRC
 
+
+def test_filter_keeps_edges_of_a_0_1_depth_map():
+    """sigma_color = 100 on 0-1 data blurred a 0.3 -> 0.7 step like a Gaussian; 0.1 keeps it."""
+    rng = np.random.default_rng(0)
+    step = np.where(np.arange(64)[None, :] < 32, 0.3, 0.7).repeat(32, 0) + rng.normal(0, 0.01, (32, 64))
+    old = cv2.bilateralFilter(step.astype(np.float32), 7, 100, 100)
+    new = U.edge_aware_filter(step)
+    assert old[:, 31].mean() > 0.4  # old setting smeared the step
+    assert abs(new[:, 31].mean() - 0.3) < 0.02 and abs(new[:, 32].mean() - 0.7) < 0.02
+    assert np.abs(new - np.where(np.arange(64) < 32, 0.3, 0.7)).std() < np.abs(step - np.where(np.arange(64) < 32, 0.3, 0.7)).std()
+    assert "edge_aware_filter(refined_depth_map)" in SRC and "sigma_color = 100" not in SRC

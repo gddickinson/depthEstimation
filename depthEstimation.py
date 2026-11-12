@@ -7,7 +7,7 @@ from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.layers import GlobalAveragePooling2D, Dense, Conv2D, UpSampling2D
 from tensorflow.keras.models import Model
 import dlib
-from depth_utils import person_box_label, xywh_to_xyxy, xyxy_to_xywh
+from depth_utils import edge_aware_filter, person_box_label, xywh_to_xyxy, xyxy_to_xywh
 
 # Constants
 frameWidth = 640
@@ -174,13 +174,6 @@ def draw_wireframe(img, wireframe_model):
             end_point = tuple(map(int, body_points[connection[1]][:2]))
             cv2.line(img, start_point, end_point, (0, 0, 255), 2)
 
-def apply_edge_aware_filter(depth_map):
-    d = 7
-    sigma_color = 100
-    sigma_space = 100
-    filtered_depth = cv2.bilateralFilter(depth_map.astype(np.float32), d, sigma_color, sigma_space)
-    return filtered_depth
-
 def main():
     cap = cv2.VideoCapture(0)
     cap.set(3, frameWidth)
@@ -222,7 +215,7 @@ def main():
         refined_depth_map = refine_depth_with_person_info(depth_map, landmarks[0] if landmarks else None, person_bbox, person_keypoints)
 
         # Apply edge-aware filtering
-        filtered_depth_map = apply_edge_aware_filter(refined_depth_map)
+        filtered_depth_map = edge_aware_filter(refined_depth_map)
 
         # Create wireframe model
         wireframe_model = create_wireframe_model(landmarks[0] if landmarks else None, person_keypoints, filtered_depth_map)
