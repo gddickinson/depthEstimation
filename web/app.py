@@ -31,7 +31,8 @@ async def lifespan(_app):
 app = FastAPI(title="Kinect Depth Lab", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
-# depthEstimation.py, apply_edge_aware_filter: cv2.bilateralFilter(depth, d=7, sigmaColor=100, sigmaSpace=100)
+# Bilateral defaults for Kinect millimetres: d=7, sigmas 100 (the original depthEstimation.py call; that script now uses
+# sigma_color 0.1 on its 0-1 model output, see depth_utils.py)
 FILTER_DEFAULTS = {"d": 7, "sigma_color": 100.0, "sigma_space": 100.0}
 
 

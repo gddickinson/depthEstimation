@@ -16,7 +16,7 @@ route('about', async () => {
       and test_kinect.py, Viridis in depthEstimation.py), reproduced from OpenCV's own tables.</li>
     <li><b>Point cloud</b>: the pinhole back-projection of slamMapping.py, f = ${esc(info.intrinsics.f_px)} px, principal point
       (${esc(info.intrinsics.cx)}, ${esc(info.intrinsics.cy)}).</li>
-    <li><b>Filter</b>: <code>cv2.bilateralFilter</code> with depthEstimation.py's settings (d = ${esc(info.filter.d)}, σ = ${esc(info.filter.sigma_color)}).</li>
+    <li><b>Filter</b>: <code>cv2.bilateralFilter</code> (d = ${esc(info.filter.d)}, σ = ${esc(info.filter.sigma_color)} mm on Kinect depth; depthEstimation.py uses σ<sub>colour</sub> = 0.1 on its 0–1 model output).</li>
     <li><b>Live Kinect</b>: the local app's dashboard for a connected device.</li>
   </ul>
   <p>The maths is in <code>kinect_depth/</code> (numpy, no hardware) and ported to JavaScript; a node test checks the JS

@@ -10,6 +10,9 @@
 - **skeletonTest.py** — Skeleton tracking test script
 - **skeletonAnimation.py** — Skeleton animation playback
 
+- **depth_utils.py** — cv2/numpy helpers for depthEstimation.py: box format conversion (YOLO xyxy <-> KCF xywh),
+  `person_box_label`, `edge_aware_filter` (bilateral, sigma_color 0.1 for the 0-1 model output); tests/test_depth_utils.py
+
 ### Hardware Interface
 - **kinect_wrapper.pyx** — Cython wrapper for libfreenect (Kinect capture): `PyKinectCapture.init/get_frames/close`
 - **kinect_capture.cpp / .h** — C++ Kinect capture implementation

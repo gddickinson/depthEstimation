@@ -13,7 +13,7 @@ route('filter', async (args, query) => {
   <h1>Bilateral filter</h1>
   <p class="lead">Each pixel becomes a weighted mean of its neighbours in a disc of diameter d. The weight falls with
     distance (σ<sub>space</sub>, pixels) and with depth difference (σ<sub>colour</sub>, here millimetres), so noise is
-    smoothed but steps between objects are kept. depthEstimation.py calls it with d = ${def.d}, σ = ${def.sigma_color}.</p>
+    smoothed but steps between objects are kept. Defaults: d = ${def.d}, σ = ${def.sigma_color} (depthEstimation.py's original call).</p>
   <p><span class="eq">w = exp(−|q−p|² / 2σ<sub>s</sub>²) · exp(−(D<sub>q</sub>−D<sub>p</sub>)² / 2σ<sub>c</sub>²)</span></p>
   <div class="side">
     <div class="panel" id="ctl">
@@ -29,9 +29,9 @@ route('filter', async (args, query) => {
       <canvas id="ch" class="chart" role="img" aria-label="Depth along one image row: truth, input and filtered"></canvas>
       <p class="legend"><i style="background:#ffffff"></i>noise-free scene<i style="background:#ff8a3d"></i>input<i style="background:#38e1ff"></i>filtered</p>
       <dl class="kv" id="err"></dl>
-      <p class="small mute">In depthEstimation.py the filter runs on the monocular model's output, a sigmoid in 0–1, where
-        σ<sub>colour</sub> = 100 is far larger than any depth difference: there it acts as a plain Gaussian blur. On
-        Kinect millimetres the same σ keeps edges larger than a few hundred mm.</p>
+      <p class="small mute">depthEstimation.py runs the filter on its monocular model's output, a sigmoid in 0–1, so it
+        now uses σ<sub>colour</sub> = 0.1 there (σ = 100 on that range weighed every neighbour equally: a plain Gaussian
+        blur). On Kinect millimetres, σ<sub>colour</sub> = 100 keeps edges larger than a few hundred mm.</p>
     </div>
   </div>`;
   const ctl = $('#ctl'), sel = $('#sc');

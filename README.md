@@ -116,7 +116,7 @@ The depth maths of the Kinect scripts, factored into `kinect_depth/` (numpy, no 
 - **Depth map**: `cv2.normalize(NORM_MINMAX)` + `cv2.applyColorMap` (Jet / Viridis tables taken from OpenCV), with a
   millimetre and x/y read-out under the pointer.
 - **Point cloud**: pinhole back-projection with slamMapping.py's f = 525 px and image-centre principal point.
-- **Filter**: `cv2.bilateralFilter` with depthEstimation.py's settings (d = 7, sigma 100), against the noise-free scene.
+- **Filter**: `cv2.bilateralFilter` with d = 7, sigma 100 (mm) on Kinect depth (depthEstimation.py now uses sigma_color 0.1 on its 0-1 model output), against the noise-free scene.
 - **Live Kinect** (local app only): RGB, colourised depth, point cloud and frame statistics streamed from a connected
   Kinect through `kinect_wrapper`; without a device or without the built extension it says why.
 

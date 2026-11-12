@@ -12,5 +12,7 @@
     `kinect_wrapper.cpython-311-darwin.so`.
   - slamMapping.py: point-cloud x grid built with np.repeat (wrong column per pixel) and depth-0 pixels kept as points.
   - README: untrained monocular model described as producing depth; unused midas_model.pb; moved scripts' paths.
-- Open for George: depthEstimation.py prints "Avg Depth: <bbox width in px>m" (bbox width labelled as metres);
-  its bilateral filter (sigma_color 100) runs on 0-1 model output, where it is a plain Gaussian blur.
+- Follow-up (coordinator, under George's "fix any other problems" rule):
+  - depthEstimation.py person read-out "Avg Depth: <bbox width>m" relabelled "Box width: N px" (no metric depth from
+    the unitless model); KCF tracker now given (x, y, w, h) and its result converted back to (x1, y1, x2, y2).
+  - Bilateral filter sigma_color 100 -> 0.1 to match the 0-1 model output, so it preserves edges (depth_utils.py).
