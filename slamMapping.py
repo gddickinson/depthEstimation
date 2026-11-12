@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPu
 from PyQt5.QtCore import QTimer, QThread, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap
 from kinect_wrapper import PyKinectCapture
+from kinect_depth.processing import depth_to_points
 from ultralytics import YOLO
 import traceback
 
@@ -72,19 +73,8 @@ class KinectSLAMApp(QMainWindow):
 
             self.log_debug(f"Received frame {self.frame_count}: RGB shape {rgb.shape}, Depth shape {depth.shape}")
 
-            # Create point cloud
-            h, w = depth.shape
-            f = 525  # focal length (you may need to adjust this based on your Kinect model)
-            x = np.repeat(np.arange(w), h).reshape((h, w))
-            y = np.tile(np.arange(h), w).reshape((w, h)).T
-            z = depth
-            x = (x - w/2) * z / f
-            y = (y - h/2) * z / f
-            xyz = np.dstack((x, y, z)).reshape((-1, 3))
-
-            # Filter out invalid points
-            valid = np.all(np.isfinite(xyz), axis=1)
-            xyz = xyz[valid]
+            # Create point cloud (pixels without a depth reading are dropped)
+            xyz, valid = depth_to_points(depth)
             colors = rgb.reshape((-1, 3))[valid]
 
             # Append to existing point cloud
