@@ -7,6 +7,7 @@ from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.layers import GlobalAveragePooling2D, Dense, Conv2D, UpSampling2D
 from tensorflow.keras.models import Model
 import dlib
+from depth_utils import person_box_label, xywh_to_xyxy, xyxy_to_xywh
 
 # Constants
 frameWidth = 640
@@ -43,16 +44,18 @@ class PersonTracker:
         self.bbox = None
         self.tracking_started = False
 
+    # self.bbox is kept as (x1, y1, x2, y2) like YOLO's boxes; KCF itself works in (x, y, w, h).
     def start_track(self, frame, bbox):
-        self.bbox = bbox
+        self.bbox = tuple(float(v) for v in bbox[:4])
         self.tracker = cv2.TrackerKCF_create()
-        self.tracker.init(frame, tuple(bbox))
+        self.tracker.init(frame, tuple(int(round(v)) for v in xyxy_to_xywh(bbox)))
         self.tracking_started = True
 
     def update(self, frame):
         if self.tracking_started:
             success, bbox = self.tracker.update(frame)
             if success:
+                bbox = xywh_to_xyxy(bbox)
                 self.bbox = bbox
             return success, bbox
         return False, None
@@ -238,9 +241,10 @@ def main():
             person_depth = np.median(filtered_depth_map[int(person_bbox[1]):int(person_bbox[3]), int(person_bbox[0]):int(person_bbox[2])])
             person_tracker.update(img)
 
-        avg_person_depth = person_tracker.bbox[2] - person_tracker.bbox[0] if person_tracker.bbox is not None else None
-        if avg_person_depth is not None:
-            cv2.putText(img, f"Avg Depth: {avg_person_depth:.2f}m", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        # The depth model's output is unitless (0-1), so there is no metric depth to show: report the box width.
+        box_label = person_box_label(person_tracker.bbox)
+        if box_label is not None:
+            cv2.putText(img, box_label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
         # Ensure depth_display has the same dimensions as img
         depth_display = cv2.applyColorMap((filtered_depth_map * 255).astype(np.uint8), cv2.COLORMAP_VIRIDIS)
