@@ -11,3 +11,8 @@
 /kinectStream/testing_2
 /kinectStream/kinect_interface/build
 /kinectStream/build
+
+# web interface
+site/
+!docs/img/*.png
+__pycache__/

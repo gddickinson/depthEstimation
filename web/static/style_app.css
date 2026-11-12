@@ -1,0 +1,20 @@
+/* Kinect Depth Lab: accent colours (depth-map cyan, warm near-field orange, violet) and page styles. */
+:root { --accent:#38e1ff; --accent2:#ff8a3d; --accent3:#a07bff; --glow:rgba(56,225,255,.13); }
+.mark { border-color:var(--accent); box-shadow:0 0 12px var(--accent), inset 0 0 0 4px var(--bg), inset 0 0 0 9px var(--accent2); }
+button, .btn { color:#021018; } .seg button.on { color:#021018; }
+.stage canvas.pix { image-rendering:pixelated; }
+.stage { touch-action:none; }
+.stage .hud { position:absolute; left:8px; bottom:8px; font:12px var(--mono); color:var(--ink); background:rgba(0,0,0,.6);
+  padding:3px 8px; border-radius:3px; pointer-events:none; }
+.cbar { height:12px; border-radius:2px; border:1px solid var(--line); margin-top:8px; }
+.cbar-l { display:flex; justify-content:space-between; font:12px var(--mono); color:var(--mute); }
+.kv { display:grid; grid-template-columns:auto 1fr; gap:2px 14px; font-size:14px; margin:6px 0; }
+.kv dt { color:var(--mute); } .kv dd { margin:0; font-family:var(--mono); }
+.pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.pair figure { margin:0; } .pair figcaption { font-size:13px; color:var(--mute); margin-top:4px; }
+.chart { width:100%; height:200px; display:block; background:rgba(3,5,10,.9); border:1px solid var(--line); border-radius:4px; }
+.legend { font-size:13px; color:var(--mute); } .legend i { display:inline-block; width:14px; height:3px; vertical-align:middle; margin:0 6px 0 12px; }
+.state { font:600 13px var(--mono); text-transform:uppercase; letter-spacing:.08em; }
+.state.streaming { color:var(--good); } .state.no-device, .state.unavailable, .state.stalled { color:var(--warn); }
+.preview { max-width:420px; align-self:start; }
+@media (max-width:760px) { .pair { grid-template-columns:1fr; } }

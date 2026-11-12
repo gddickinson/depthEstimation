@@ -102,6 +102,38 @@ python skeletonPositionEstimation.py
 ```
 Kalman-filtered skeleton position estimation using Kinect depth data for smooth tracking.
 
+## Web interface (Kinect Depth Lab)
+
+Live site: https://gddickinson.github.io/depthEstimation/ (static, runs in the browser).
+
+| Depth map | Point cloud | Bilateral filter |
+|---|---|---|
+| ![Depth map](docs/img/view.png) | ![Point cloud](docs/img/cloud.png) | ![Filter](docs/img/filter.png) |
+
+The depth maths of the Kinect scripts, factored into `kinect_depth/` (numpy, no hardware) and ported to JavaScript
+(node-tested against the Python on every scene):
+
+- **Depth map**: `cv2.normalize(NORM_MINMAX)` + `cv2.applyColorMap` (Jet / Viridis tables taken from OpenCV), with a
+  millimetre and x/y read-out under the pointer.
+- **Point cloud**: pinhole back-projection with slamMapping.py's f = 525 px and image-centre principal point.
+- **Filter**: `cv2.bilateralFilter` with depthEstimation.py's settings (d = 7, sigma 100), against the noise-free scene.
+- **Live Kinect** (local app only): RGB, colourised depth, point cloud and frame statistics streamed from a connected
+  Kinect through `kinect_wrapper`; without a device or without the built extension it says why.
+
+The repo has no recorded depth frames, so the pages use **synthetic scenes** (`kinect_depth/scenes.py`: ray-cast planes,
+boxes and spheres with illustrative noise and shadow bands, not a calibrated sensor model).
+
+### Run the web app
+
+```bash
+pip install -r requirements-web.txt
+python run_web.py            # http://127.0.0.1:8155
+```
+
+For the Live page also build the extension for the same Python (`python setup.py build_ext --inplace`) and plug in the
+Kinect. Tests: `python -m pytest -q tests` and `node web/static/depth_engine.test.mjs`. The static site is built by
+`scripts/build_static.py` and published by `.github/workflows/pages.yml` on push to main.
+
 ## How It Works
 
 1. **Frame Capture**: RGB frames from webcam or Kinect (with depth)

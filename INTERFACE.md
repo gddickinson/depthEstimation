@@ -11,10 +11,29 @@
 - **skeletonAnimation.py** — Skeleton animation playback
 
 ### Hardware Interface
-- **kinect_wrapper.pyx** — Cython wrapper for libfreenect (Kinect capture)
+- **kinect_wrapper.pyx** — Cython wrapper for libfreenect (Kinect capture): `PyKinectCapture.init/get_frames/close`
 - **kinect_capture.cpp / .h** — C++ Kinect capture implementation
 - **setup.py** — Build script for Cython extension (auto-finds libfreenect/libusb)
 - **kinectStream/** — Kinect streaming test scripts and build variants
+
+### Depth maths (kinect_depth/, numpy only, no hardware)
+- **kinect_depth/processing.py** — `FRAME_W/FRAME_H` (640x480), `FOCAL_PX` (525), `depth_to_points` (used by slamMapping.py),
+  `normalize_minmax` (cv2.normalize NORM_MINMAX), `apply_colormap` / `load_colormaps`, `bilateral_filter` / `bilateral_kernel`
+  (cv2.bilateralFilter weights), `depth_stats`
+- **kinect_depth/scenes.py** — `SCENES`, `render_scene` (ray-cast synthetic depth frames), `scene_list`
+- **kinect_depth/colormap_luts.json** — OpenCV Jet/Viridis tables (written by scripts/make_colormap_luts.py)
+
+### Web interface (web/, run_web.py on 127.0.0.1:8155)
+- **web/app.py** — FastAPI: `/api/info`, `/api/scenes`, `/api/colormaps` (exported as STATIC_ENDPOINTS), live
+  `/api/device/status|connect|disconnect|frame`
+- **web/device.py** — `KinectSource`: lazy kinect_wrapper import, lock, frame timeout, status reasons
+- **web/static/** — index.html, core.js + style.css (shared kit), main.js (router), data.js, render.js (canvas drawing,
+  `CloudView`), pages home/view/cloud/filter/live/about.js, static_api.js (static site),
+  **depth_engine.js** / **scene_engine.js** (JS ports of kinect_depth) + depth_engine.test.mjs (node, vs fixture)
+- **scripts/** — build_static.py (Pages export), screenshots.py (Playwright smoke test), make_engine_fixture.py,
+  make_colormap_luts.py
+- **tests/** — test_web.py (API + static build + node), test_processing.py, test_engine_fixture.py,
+  test_kinect_wrapper.py (no-device lifecycle; skipped if the extension is not built), fixtures/engine_fixture.json
 
 ### Test & Utility Scripts
 - **test_smoke.py** — Smoke tests for non-hardware modules (8 tests)
